@@ -113,6 +113,25 @@
                 return;
             }
 
+            fetch('/api/addProduct', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nomeProduto, precoProduto })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                adicionarProdutoNaTabela(nomeProduto, precoProduto);
+            })
+            .catch(error => console.error('Erro:', error));
+
+            document.getElementById('nomeProduto').value = "";
+            document.getElementById('precoProduto').value = "";
+        }
+
+        function adicionarProdutoNaTabela(nomeProduto, precoProduto) {
             var tabela = document.getElementById('tabelaProdutos').getElementsByTagName('tbody')[0];
             var novaLinha = tabela.insertRow();
 
@@ -121,9 +140,6 @@
 
             celulaNome.innerHTML = nomeProduto;
             celulaPreco.innerHTML = "R$ " + parseFloat(precoProduto).toFixed(2);
-
-            document.getElementById('nomeProduto').value = "";
-            document.getElementById('precoProduto').value = "";
         }
 
         function pesquisarProduto() {
