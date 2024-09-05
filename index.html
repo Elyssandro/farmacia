@@ -73,7 +73,7 @@
 <body>
 
     <h1>Tabela de Preços de Produtos</h1>
-    
+
     <div class="container">
         <div class="form-group">
             <label for="nomeProduto">Nome do Produto:</label>
@@ -89,7 +89,7 @@
             <label for="pesquisaProduto">Pesquisar Produto:</label>
             <input type="text" id="pesquisaProduto" placeholder="Digite o nome do produto para pesquisar" onkeyup="pesquisarProduto()">
         </div>
-        
+
         <table id="tabelaProdutos">
             <thead>
                 <tr>
@@ -103,17 +103,33 @@
         </table>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
     <script>
-        // Função para carregar os produtos salvos quando a página for carregada
+        // Configuração do Firebase (substitua com suas credenciais do Firebase)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "SUA_APP_ID"
+        };
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Carregar produtos do Firestore quando a página for carregada
         window.onload = function() {
-            fetch('/.netlify/functions/getProducts')
-                .then(response => response.json())
-                .then(data => {
-                    data.produtos.forEach(produto => {
-                        adicionarProdutoNaTabela(produto.nome, produto.preco);
-                    });
-                })
-                .catch(error => console.error('Erro ao buscar produtos:', error));
+            db.collection("produtos").get().then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    const produto = doc.data();
+                    adicionarProdutoNaTabela(produto.nome, produto.preco);
+                });
+            });
         };
 
         function adicionarProduto() {
@@ -125,20 +141,18 @@
                 return;
             }
 
-            fetch('/.netlify/functions/addProduct', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nomeProduto, precoProduto })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
+            // Adicionar o produto ao Firestore
+            db.collection("produtos").add({
+                nome: nomeProduto,
+                preco: parseFloat(precoProduto)
+            }).then(() => {
+                alert("Produto adicionado com sucesso!");
                 adicionarProdutoNaTabela(nomeProduto, precoProduto);
-            })
-            .catch(error => console.error('Erro:', error));
+            }).catch((error) => {
+                console.error("Erro ao adicionar produto:", error);
+            });
 
+            // Limpar os campos de entrada
             document.getElementById('nomeProduto').value = "";
             document.getElementById('precoProduto').value = "";
         }

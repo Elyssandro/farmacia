@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+let produtos = [];
 
 exports.handler = async function(event, context) {
     if (event.httpMethod === 'POST') {
@@ -11,32 +11,13 @@ exports.handler = async function(event, context) {
             };
         }
 
-        let client;
+        const novoProduto = { nome: nomeProduto, preco: parseFloat(precoProduto) };
+        produtos.push(novoProduto);
 
-        try {
-            // Conectar ao MongoDB
-            client = await MongoClient.connect(process.env.MONGODB_URI);
-            const db = client.db();
-            const collection = db.collection('produtos');
-
-            // Inserir os dados no banco de dados
-            const result = await collection.insertOne({ nome: nomeProduto, preco: precoProduto });
-
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ message: 'Produto adicionado com sucesso!', result }),
-            };
-        } catch (error) {
-            console.error('Erro ao conectar ao MongoDB ou inserir dados:', error);
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ message: 'Erro ao adicionar o produto', error }),
-            };
-        } finally {
-            if (client) {
-                await client.close();
-            }
-        }
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Produto adicionado com sucesso!', produto: novoProduto }),
+        };
     } else {
         return {
             statusCode: 405,
