@@ -1,11 +1,14 @@
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
-export default async function handler(req, res) {
-    if (req.method === 'POST') {
-        const { nomeProduto, precoProduto } = req.body;
+exports.handler = async function(event, context) {
+    if (event.httpMethod === 'POST') {
+        const { nomeProduto, precoProduto } = JSON.parse(event.body);
 
         if (!nomeProduto || !precoProduto) {
-            return res.status(400).json({ message: 'Nome do produto e preço são obrigatórios' });
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Nome do produto e preço são obrigatórios' }),
+            };
         }
 
         let client;
@@ -19,17 +22,25 @@ export default async function handler(req, res) {
             // Inserir os dados no banco de dados
             const result = await collection.insertOne({ nome: nomeProduto, preco: precoProduto });
 
-            // Responder ao frontend
-            res.status(200).json({ message: 'Produto adicionado com sucesso!', result });
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: 'Produto adicionado com sucesso!', result }),
+            };
         } catch (error) {
             console.error('Erro ao conectar ao MongoDB ou inserir dados:', error);
-            res.status(500).json({ message: 'Erro ao adicionar o produto', error });
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ message: 'Erro ao adicionar o produto', error }),
+            };
         } finally {
             if (client) {
                 await client.close();
             }
         }
     } else {
-        res.status(405).json({ message: 'Método não permitido' });
+        return {
+            statusCode: 405,
+            body: JSON.stringify({ message: 'Método não permitido' }),
+        };
     }
-}
+};

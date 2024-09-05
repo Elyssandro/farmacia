@@ -1,8 +1,7 @@
-// pages/api/getProducts.js
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
-export default async function handler(req, res) {
-    if (req.method === 'GET') {
+exports.handler = async function(event, context) {
+    if (event.httpMethod === 'GET') {
         let client;
 
         try {
@@ -14,17 +13,25 @@ export default async function handler(req, res) {
             // Buscar todos os produtos salvos
             const produtos = await collection.find().toArray();
 
-            // Enviar os produtos como resposta
-            res.status(200).json({ produtos });
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ produtos }),
+            };
         } catch (error) {
             console.error('Erro ao buscar produtos:', error);
-            res.status(500).json({ message: 'Erro ao buscar os produtos', error });
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ message: 'Erro ao buscar os produtos', error }),
+            };
         } finally {
             if (client) {
                 await client.close();
             }
         }
     } else {
-        res.status(405).json({ message: 'Método não permitido' });
+        return {
+            statusCode: 405,
+            body: JSON.stringify({ message: 'Método não permitido' }),
+        };
     }
-}
+};

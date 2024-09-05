@@ -106,7 +106,7 @@
     <script>
         // Função para carregar os produtos salvos quando a página for carregada
         window.onload = function() {
-            fetch('/api/getProducts')
+            fetch('/.netlify/functions/getProducts')
                 .then(response => response.json())
                 .then(data => {
                     data.produtos.forEach(produto => {
@@ -125,7 +125,7 @@
                 return;
             }
 
-            fetch('/api/addProduct', {
+            fetch('/.netlify/functions/addProduct', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
