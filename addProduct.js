@@ -1,26 +1,29 @@
+// pages/api/getProducts.js
 import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
-    if (req.method === 'POST') {
-        const { nomeProduto, precoProduto } = req.body;
+    if (req.method === 'GET') {
+        let client;
 
-        // Conectar ao MongoDB usando a variável de ambiente
-        const client = await MongoClient.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        try {
+            // Conectar ao MongoDB
+            client = await MongoClient.connect(process.env.MONGODB_URI);
+            const db = client.db();
+            const collection = db.collection('produtos');
 
-        const db = client.db();
-        const collection = db.collection('produtos');
+            // Buscar todos os produtos salvos
+            const produtos = await collection.find().toArray();
 
-        // Inserir os dados no banco de dados
-        const result = await collection.insertOne({ nome: nomeProduto, preco: precoProduto });
-
-        // Fechar a conexão
-        client.close();
-
-        // Responder ao frontend
-        res.status(200).json({ message: 'Produto adicionado com sucesso!', result });
+            // Enviar os produtos como resposta
+            res.status(200).json({ produtos });
+        } catch (error) {
+            console.error('Erro ao buscar produtos:', error);
+            res.status(500).json({ message: 'Erro ao buscar os produtos', error });
+        } finally {
+            if (client) {
+                await client.close();
+            }
+        }
     } else {
         res.status(405).json({ message: 'Método não permitido' });
     }
