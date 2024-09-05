@@ -104,11 +104,23 @@
     </div>
 
     <script>
+        // Função para carregar os produtos salvos quando a página for carregada
+        window.onload = function() {
+            fetch('/api/getProducts')
+                .then(response => response.json())
+                .then(data => {
+                    data.produtos.forEach(produto => {
+                        adicionarProdutoNaTabela(produto.nome, produto.preco);
+                    });
+                })
+                .catch(error => console.error('Erro ao buscar produtos:', error));
+        };
+
         function adicionarProduto() {
             var nomeProduto = document.getElementById('nomeProduto').value;
             var precoProduto = document.getElementById('precoProduto').value;
 
-            if(nomeProduto === "" || precoProduto === "") {
+            if (nomeProduto === "" || precoProduto === "") {
                 alert("Por favor, preencha ambos os campos.");
                 return;
             }
