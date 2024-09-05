@@ -1,8 +1,13 @@
-// pages/api/getProducts.js
 import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
-    if (req.method === 'GET') {
+    if (req.method === 'POST') {
+        const { nomeProduto, precoProduto } = req.body;
+
+        if (!nomeProduto || !precoProduto) {
+            return res.status(400).json({ message: 'Nome do produto e preço são obrigatórios' });
+        }
+
         let client;
 
         try {
@@ -11,14 +16,14 @@ export default async function handler(req, res) {
             const db = client.db();
             const collection = db.collection('produtos');
 
-            // Buscar todos os produtos salvos
-            const produtos = await collection.find().toArray();
+            // Inserir os dados no banco de dados
+            const result = await collection.insertOne({ nome: nomeProduto, preco: precoProduto });
 
-            // Enviar os produtos como resposta
-            res.status(200).json({ produtos });
+            // Responder ao frontend
+            res.status(200).json({ message: 'Produto adicionado com sucesso!', result });
         } catch (error) {
-            console.error('Erro ao buscar produtos:', error);
-            res.status(500).json({ message: 'Erro ao buscar os produtos', error });
+            console.error('Erro ao conectar ao MongoDB ou inserir dados:', error);
+            res.status(500).json({ message: 'Erro ao adicionar o produto', error });
         } finally {
             if (client) {
                 await client.close();
